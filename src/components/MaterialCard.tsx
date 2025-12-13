@@ -213,8 +213,8 @@ export function MaterialCard({ material, isAdmin, onEdit, onDelete }: MaterialCa
               size="default"
             >
               <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Request Premium Access (3000/=)</span>
-              <span className="sm:hidden">Premium (3000/=)</span>
+              <span className="hidden sm:inline">Request Premium Access (2000/=)</span>
+              <span className="sm:hidden">Premium (2000/=)</span>
             </Button>
             
             <Button
