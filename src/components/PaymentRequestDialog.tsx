@@ -27,8 +27,8 @@ export function PaymentRequestDialog({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const MATERIAL_PRICE = "3000/=";
-  const WHATSAPP_NUMBER = "256700000000"; // Replace with your WhatsApp number
+  const MATERIAL_PRICE = "2000/=";
+  const WHATSAPP_NUMBER = "255756377013";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
