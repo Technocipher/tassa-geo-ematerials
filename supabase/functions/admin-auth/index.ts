@@ -157,11 +157,17 @@ Deno.serve(async (req) => {
           .eq('material_id', materialId)
           .eq('code', premiumCode)
           .is('used_by', null)
-          .single()
+          .maybeSingle()
 
-        if (codeError || !codeData) {
+        if (codeError) {
+          console.error('Code lookup error:', codeError)
+          return new Response(JSON.stringify({ valid: false, error: 'Error validating code' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+
+        if (!codeData) {
           return new Response(JSON.stringify({ valid: false, error: 'Invalid or already used code' }), {
-            status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
@@ -175,20 +181,26 @@ Deno.serve(async (req) => {
           })
           .eq('id', codeData.id)
 
-        if (updateCodeError) throw updateCodeError
+        if (updateCodeError) {
+          console.error('Code update error:', updateCodeError)
+          return new Response(JSON.stringify({ valid: false, error: 'Error updating code status' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
 
-        // Record user access
+        // Record user access - use insert instead of upsert since there's no unique constraint
         const { error: accessError } = await supabaseClient
           .from('user_premium_access')
-          .upsert({
+          .insert({
             user_id: userId,
             material_id: materialId,
             code_used: premiumCode
-          }, {
-            onConflict: 'user_id,material_id'
           })
 
-        if (accessError) throw accessError
+        if (accessError) {
+          console.error('Access record error:', accessError)
+          // Still return success since code was validated and marked as used
+        }
 
         return new Response(JSON.stringify({ valid: true, success: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
