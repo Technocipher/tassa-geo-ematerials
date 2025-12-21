@@ -136,6 +136,20 @@ Deno.serve(async (req) => {
         })
 
       case 'set_premium_code':
+        // Check if code already exists
+        const { data: existingCode } = await supabaseClient
+          .from('premium_codes')
+          .select('id')
+          .eq('code', premiumCode)
+          .maybeSingle()
+
+        if (existingCode) {
+          return new Response(JSON.stringify({ success: false, error: 'This code already exists. Please use a different code.' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+
         // Insert new premium code (allow multiple codes per material)
         const { error: premiumCodeError } = await supabaseClient
           .from('premium_codes')
@@ -144,7 +158,13 @@ Deno.serve(async (req) => {
             code: premiumCode
           })
 
-        if (premiumCodeError) throw premiumCodeError
+        if (premiumCodeError) {
+          console.error('Premium code insert error:', premiumCodeError)
+          return new Response(JSON.stringify({ success: false, error: 'Failed to add code. It may already exist.' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
