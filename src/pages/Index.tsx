@@ -397,6 +397,33 @@ const Index = () => {
               <p className="text-muted-foreground">No materials found matching your criteria. Try adjusting your search terms.</p>
             </div>
           )}
+
+          {/* Request Material CTA */}
+          <ScrollReveal className="mt-12 sm:mt-16">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border border-primary/20 p-6 sm:p-10">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/20 rounded-full blur-3xl" />
+              
+              <div className="relative z-10 text-center max-w-2xl mx-auto">
+                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                  <span className="text-3xl">📩</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-display font-bold mb-3">
+                  Can't Find What You Need?
+                </h3>
+                <p className="text-muted-foreground text-base sm:text-lg mb-6 leading-relaxed">
+                  Don't worry! Request any geography material you need — even if it's not listed here. 
+                  Our admin team will help you find exactly what you're looking for.
+                </p>
+                <Link to="/request-material">
+                  <Button size="lg" className="bg-gradient-primary text-primary-foreground shadow-glow hover:shadow-glow-accent hover:scale-105 transition-all duration-300 font-semibold px-8">
+                    Request Any Material
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
         
         {/* Gallery Section with Parallax */}
