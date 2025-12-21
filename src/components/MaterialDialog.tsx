@@ -62,7 +62,8 @@ export function MaterialDialog({ material, onSuccess }: MaterialDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isPremium && !premiumCode.trim()) {
+    // Only require premium code for NEW premium materials
+    if (!isEdit && isPremium && !premiumCode.trim()) {
       toast({
         title: 'Error',
         description: 'Please provide a premium code for this material',
@@ -89,6 +90,7 @@ export function MaterialDialog({ material, onSuccess }: MaterialDialogProps) {
       });
 
       if (error) throw error;
+      if (materialResult?.error) throw new Error(materialResult.error);
 
       // If premium and code is provided, set the premium code
       if (isPremium && premiumCode.trim()) {
@@ -98,7 +100,7 @@ export function MaterialDialog({ material, onSuccess }: MaterialDialogProps) {
           throw new Error('Failed to get material ID');
         }
         
-        const { error: codeError } = await supabase.functions.invoke('admin-auth', {
+        const { data: codeResult, error: codeError } = await supabase.functions.invoke('admin-auth', {
           body: {
             action: 'set_premium_code',
             materialId: targetMaterialId,
@@ -106,12 +108,23 @@ export function MaterialDialog({ material, onSuccess }: MaterialDialogProps) {
           }
         });
 
+        // Check for error in response body (400 status returns data, not error)
         if (codeError) throw codeError;
+        if (codeResult?.error) {
+          toast({
+            title: 'Material saved',
+            description: `But premium code failed: ${codeResult.error}`,
+            variant: 'destructive',
+          });
+          setOpen(false);
+          onSuccess();
+          return;
+        }
       }
 
       toast({
         title: `Material ${isEdit ? 'updated' : 'created'} successfully`,
-        description: isPremium ? 'Premium code has been set' : undefined,
+        description: isPremium && premiumCode.trim() ? 'Premium code has been set' : undefined,
       });
 
       setOpen(false);
@@ -119,7 +132,7 @@ export function MaterialDialog({ material, onSuccess }: MaterialDialogProps) {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Something went wrong',
         variant: 'destructive',
       });
     } finally {
@@ -201,17 +214,22 @@ export function MaterialDialog({ material, onSuccess }: MaterialDialogProps) {
 
           {isPremium && (
             <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
-              <Label htmlFor="code">Premium Access Code</Label>
+              <Label htmlFor="code">
+                {isEdit ? 'Add New Premium Code (Optional)' : 'Premium Access Code'}
+              </Label>
               <Input
                 id="code"
                 type="text"
                 value={premiumCode}
                 onChange={(e) => setPremiumCode(e.target.value)}
-                placeholder="Enter code for users to access this material"
+                placeholder={isEdit ? "Leave empty to keep existing codes" : "Enter code for users to access this material"}
                 className="mt-2"
               />
               <p className="text-xs text-muted-foreground mt-2">
-                Users will need this code to unlock access to this premium material
+                {isEdit 
+                  ? 'Enter a new code to add it to this material. Use "Manage Codes" to view existing codes.'
+                  : 'Users will need this code to unlock access to this premium material'
+                }
               </p>
             </div>
           )}
